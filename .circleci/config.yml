@@ -45,4 +45,6 @@ workflows:
     build-deploy:
         jobs:
             - validate-orb
-            - test-orb
+            - test-orb:
+                requires:
+                    - validate-orb
