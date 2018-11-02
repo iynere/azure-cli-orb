@@ -100,7 +100,7 @@ orbs:
                   name: Login to the Azure CLI via username/password
                   command: |
                       az login \
-                      <<# parameters.alternate-tenant>> --tenant parameters.azure-tenant <</parameters.alternate-tenant>> \
+                      <<# parameters.alternate-tenant>> --tenant <<parameters.azure-tenant>> <</parameters.alternate-tenant>> \
                       -u <<parameters.azure-username>> \
                       -p <<parameters.azure-password>>
           login-with-service-principal:
