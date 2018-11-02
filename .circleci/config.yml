@@ -62,6 +62,9 @@ orbs:
                   command: |
                     # Set sudo to work whether logged in as root user or non-root user
                     if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+                    
+                    $SUDO apt-get update
+                    $SUDO apt-get -qqy install apt-transport-https 
 
                     if [[ $(command -v lsb_release) == "" ]]; then
                       $SUDO apt-get update && $SUDO apt-get -y install lsb-release
@@ -84,9 +87,10 @@ orbs:
                     # Update and install the Azure CLI
                     if [[ $(command -v az) == "" ]]; then
                       $SUDO apt-get update
-                      $SUDO apt-get install -y apt-transport-https ca-certificates
-                      echo "reached"
-                      $SUDO apt-get -qqy install azure-cli
+                      $SUDO apt-get -qqy install \
+                        ca-certificates \
+                        apt-transport-https \
+                        azure-cli
                       echo "Azure CLI is now installed."
                     else
                       echo "Azure CLI is already installed."
