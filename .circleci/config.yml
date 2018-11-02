@@ -1,11 +1,22 @@
 version: 2.1
 orbs:
     azure-cli: johnstonjacob/azure-cli@0.1.0
+    circleci-cli: circleci/circleci-cli@0.0.1
 
 jobs:
-    build:
+    validate-orb:
+        docker:
+            - image: circleci/python:2.7-stretch
+        steps:
+            - checkout
+            - circleci-cli/install
+            - run:
+                name: Validate orb
+                command: |
+                    circleci orb validate src/orb.yml
+    test-orb:
         docker: 
-          - image: circleci/node
+            - image: circleci/python:2.7-stretch
         steps:
           - azure-cli/install
           - run: 
@@ -30,3 +41,8 @@ jobs:
           - run: 
                 name: Verify login with user and alternate tenant
                 command: az resource list 
+workflows:
+    build-deploy:
+        jobs:
+            - validate-orb
+            - test-orb
