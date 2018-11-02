@@ -137,3 +137,5 @@ jobs:
           azure-username: $AZURE_SP_USERNAME
           azure-password: $AZURE_SP_PASSWORD
           azure-tenant: $AZURE_SP_TENANT
+      - run: az -v
+      - run: az resource list 
