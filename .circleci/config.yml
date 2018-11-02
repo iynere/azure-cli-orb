@@ -1,148 +1,22 @@
 version: 2.1
 orbs:
-    my-orb:
-        version: 2.1
-        description: |
-          Installs the Azure Command Line Interface (azcli)
-
-          The executors within this Orb provide run-time environments that contain the
-          necessary dependencies for executing the jobs and commands in this orb,
-          except for the following required dependencies that must be configured in
-          CircleCI in order to use this orb - environment variables for Azure 
-          initialization (TODO).
-
-          The source for this Orb can be found here:
-          https://github.com/CircleCI-Public/circleci-orbs/tree/master/src/azure-cli
-
-        executors:
-          default:
-            description: A debian based docker container to use when running the
-                         Azure CLI
-            parameters:
-              python-version:
-                type: string
-                default: "2.7"
-              debian-release:
-                type: string
-                default: "stretch"
-            docker:
-              - image: circleci/python:<< parameters.python-version >>-<< parameters.debian-release >>
-          azure-docker:
-            description: The official Microsoft docker container with Azure CLI 
-                         pre-installed
-            docker:
-              - image: microsoft/azure-cli
-
-        commands:
-          install:
-            description: |
-              Install the Azure CLI, if not available
-            steps:
-              - run:
-                  name: Install Azure CLI, if not available
-                  command: |
-                    # Set sudo to work whether logged in as root user or non-root user
-                    if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-                    
-                    $SUDO apt-get update
-                    $SUDO apt-get -qqy install apt-transport-https 
-
-                    if [[ $(command -v lsb_release) == "" ]]; then
-                      $SUDO apt-get update && $SUDO apt-get -y install lsb-release
-                    fi
-
-                    # Create an environment variable for the correct distribution
-                    export AZ_REPO=$(lsb_release -cs)
-
-                    # Modify your sources list 
-                    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
-                    $SUDO tee /etc/apt/sources.list.d/azure-cli.list
-
-                    if [[ $(command -v curl) == "" ]]; then
-                      $SUDO apt-get update && $SUDO apt-get -y install curl
-                    fi
-
-                    # Get the Microsoft signing key 
-                    curl -L https://packages.microsoft.com/keys/microsoft.asc | $SUDO apt-key add -
-
-                    # Update and install the Azure CLI
-                    if [[ $(command -v az) == "" ]]; then
-                      $SUDO apt-get update
-                      $SUDO apt-get -qqy install \
-                        ca-certificates \
-                        apt-transport-https \
-                        azure-cli
-                      echo "Azure CLI is now installed."
-                    else
-                      echo "Azure CLI is already installed."
-                    fi
-          login-with-user:
-            description: Initilize the Azure CLI
-            parameters:
-              azure-username:
-                description: Azure account username or Service Principal name
-                type: string
-                default: $AZURE_USERNAME
-              azure-password:
-                description: Azure account password or Service Principal password
-                type: string
-                default: $AZURE_PASSWORD
-              azure-tenant:
-                description: Tenant to sign in with
-                type: string
-                default: $AZURE_TENANT
-              alternate-tenant:
-                description: Tenant to sign in with
-                type: boolean
-                default: false
-            steps:
-              - run:
-                  name: Login to the Azure CLI via username/password
-                  command: |
-                      az login \
-                      <<# parameters.alternate-tenant>> --tenant <<parameters.azure-tenant>> <</parameters.alternate-tenant>> \
-                      -u <<parameters.azure-username>> \
-                      -p <<parameters.azure-password>>
-          login-with-service-principal:
-            description: Initilize the Azure CLI
-            parameters:
-              azure-username:
-                description: Azure account username or Service Principal name
-                type: string
-                default: $AZURE_USERNAME
-              azure-password:
-                description: Azure account password or Service Principal password
-                type: string
-                default: $AZURE_PASSWORD
-              azure-tenant:
-                description: Tenant to sign in with
-                type: string
-                default: $AZURE_TENANT
-            steps:
-              - run:
-                  name: Login to the Azure CLI via Service Principal
-                  command: |
-                      az login \
-                      --service-principal \
-                      --tenant << parameters.azure-tenant >> \
-                      -u << parameters.azure-username >> \
-                      -p << parameters.azure-password >>       
+    azure-cli: johnstonjacob/azure-cli@0.1.0
 
 jobs:
     build:
         docker: 
           - image: circleci/node
         steps:
-          - my-orb/install
+          - azure-cli/install
           - run: 
                 name: Verify Azure install
                 command: az -v
-          - my-orb/login-with-user
+          - azure-cli/login-with-user
           - run: 
                 name: Verify login with user
                 command: az resource list 
           - run: az logout
-          - my-orb/login-with-service-principal:
+          - azure-cli/login-with-service-principal:
               azure-username: $AZURE_SP_NAME
               azure-password: $AZURE_SP_PASSWORD
               azure-tenant: $AZURE_SP_TENANT
@@ -150,7 +24,7 @@ jobs:
                 name: Verify login with Service Principal
                 command: az resource list 
           - run: az logout
-          - my-orb/login-with-user:
+          - azure-cli/login-with-user:
               alternate-tenant: true
               azure-tenant: $AZURE_SP_TENANT
           - run: 

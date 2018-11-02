@@ -2,33 +2,8 @@ version: 2.1
 description: |
   Installs the Azure Command Line Interface (azcli)
 
-  The executors within this Orb provide run-time environments that contain the
-  necessary dependencies for executing the jobs and commands in this orb,
-  except for the following required dependencies that must be configured in
-  CircleCI in order to use this orb - environment variables for Azure 
-  initialization (TODO).
-
   The source for this Orb can be found here:
   https://github.com/CircleCI-Public/circleci-orbs/tree/master/src/azure-cli
-
-examples:
-  simple_install_and_configure:
-    description: Install the azure CLI, if not available
-    usage:
-      version: 2.1
-
-      orbs:
-        azure-cli: circleci/azure-cli@1.0.0
-
-      workflows:
-        install_and_configure_cli:
-          # optionally determine executor to use
-          executor: default
-          jobs:
-            - azure-cli/install_and_configure_cli:
-                context: myContext # your context containing gcloud service key
-                google-project-id: myGoogleProjectId
-                google-compute-zone: myGoogleComputeZone
 
 executors:
   default:
@@ -43,7 +18,7 @@ executors:
         default: "stretch"
     docker:
       - image: circleci/python:<< parameters.python-version >>-<< parameters.debian-release >>
-  azure:
+  azure-docker:
     description: The official Microsoft docker container with Azure CLI 
                  pre-installed
     docker:
@@ -59,6 +34,9 @@ commands:
           command: |
             # Set sudo to work whether logged in as root user or non-root user
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            
+            $SUDO apt-get update
+            $SUDO apt-get -qqy install apt-transport-https 
 
             if [[ $(command -v lsb_release) == "" ]]; then
               $SUDO apt-get update && $SUDO apt-get -y install lsb-release
@@ -81,26 +59,62 @@ commands:
             # Update and install the Azure CLI
             if [[ $(command -v az) == "" ]]; then
               $SUDO apt-get update
-              $SUDO apt-get -y install apt-transport-https azure-cli
+              $SUDO apt-get -qqy install \
+                ca-certificates \
+                apt-transport-https \
+                azure-cli
               echo "Azure CLI is now installed."
             else
               echo "Azure CLI is already installed."
             fi
-  login-username:
+  login-with-user:
     description: Initilize the Azure CLI
     parameters:
       azure-username:
-        description: Azure account username
+        description: Azure account username or Service Principal name
         type: string
         default: $AZURE_USERNAME
       azure-password:
-        description: Azure account password
+        description: Azure account password or Service Principal password
         type: string
         default: $AZURE_PASSWORD
+      azure-tenant:
+        description: Tenant to sign in with
+        type: string
+        default: $AZURE_TENANT
+      alternate-tenant:
+        description: Tenant to sign in with
+        type: boolean
+        default: false
     steps:
       - run:
-          name: Login to the Azure CLI with a username and password
+          name: Login to the Azure CLI via username/password
           command: |
               az login \
+              <<# parameters.alternate-tenant>> --tenant <<parameters.azure-tenant>> <</parameters.alternate-tenant>> \
               -u <<parameters.azure-username>> \
               -p <<parameters.azure-password>>
+  login-with-service-principal:
+    description: Initilize the Azure CLI
+    parameters:
+      azure-username:
+        description: Azure account username or Service Principal name
+        type: string
+        default: $AZURE_USERNAME
+      azure-password:
+        description: Azure account password or Service Principal password
+        type: string
+        default: $AZURE_PASSWORD
+      azure-tenant:
+        description: Tenant to sign in with
+        type: string
+        default: $AZURE_TENANT
+    steps:
+      - run:
+          name: Login to the Azure CLI via Service Principal
+          command: |
+              az login \
+              --service-principal \
+              --tenant << parameters.azure-tenant >> \
+              -u << parameters.azure-username >> \
+              -p << parameters.azure-password >>       
