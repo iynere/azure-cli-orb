@@ -93,7 +93,7 @@ orbs:
                 default: $AZURE_TENANT
               alternate-tenant:
                 description: Tenant to sign in with
-                type: string
+                type: boolean
                 default: false
             steps:
               - run:
