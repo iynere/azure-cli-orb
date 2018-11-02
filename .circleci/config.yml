@@ -84,10 +84,8 @@ orbs:
                     # Update and install the Azure CLI
                     if [[ $(command -v az) == "" ]]; then
                       $SUDO apt-get update
-                      $SUDO apt-get -qqy install \
-                        ca-certificates \
-                        apt-transport-https \
-                        azure-cli
+                      $SUDO apt-get install -y apt-transport-https ca-certificates
+                      $SUDO apt-get -qqy install azure-cli
                       echo "Azure CLI is now installed."
                     else
                       echo "Azure CLI is already installed."
