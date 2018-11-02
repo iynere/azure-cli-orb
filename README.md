@@ -82,6 +82,7 @@ workflows:
         - login-to-azure:
             requires:
                 - azure-cli/install
+```
 
 #### login-with-service-principal 
 
