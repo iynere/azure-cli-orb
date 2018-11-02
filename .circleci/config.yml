@@ -129,24 +129,30 @@ orbs:
                       -p << parameters.azure-password >>       
 
 jobs:
-  build:
-    docker: 
-      - image: circleci/node
-    steps:
-      - my-orb/install
-      - my-orb/login-with-user
-      - run: az -v
-      - run: az resource list 
-      - run: az logout
-      - my-orb/login-with-service-principal:
-          azure-username: $AZURE_SP_NAME
-          azure-password: $AZURE_SP_PASSWORD
-          azure-tenant: $AZURE_SP_TENANT
-      - run: az -v
-      - run: az resource list 
-      - run: az logout
-      - my-orb/login-with-user:
-          alternate-tenant: true
-          azure-tenant: $AZURE_SP_TENANT
-      - run: az -v
-      - run: az resource list 
+    build:
+        docker: 
+          - image: circleci/node
+        steps:
+          - my-orb/install
+          - run: 
+                name: Verify Azure install
+                command: az -v
+          - my-orb/login-with-user
+          - run: 
+                name: Verify login with user
+                command: az resource list 
+          - run: az logout
+          - my-orb/login-with-service-principal:
+              azure-username: $AZURE_SP_NAME
+              azure-password: $AZURE_SP_PASSWORD
+              azure-tenant: $AZURE_SP_TENANT
+          - run: 
+                name: Verify login with Service Principal
+                command: az resource list 
+          - run: az logout
+          - my-orb/login-with-user:
+              alternate-tenant: true
+              azure-tenant: $AZURE_SP_TENANT
+          - run: 
+                name: Verify login with user and alternate tenant
+                command: az resource list 
