@@ -122,4 +122,5 @@ jobs:
       - run: exit 0 #toggle this to force success or status for testing
       - my-orb/install
       - my-orb/login-username
-      - run: az resource list
+      - run: az -v
+      - run: az resource list 
