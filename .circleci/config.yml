@@ -87,17 +87,22 @@ orbs:
                 description: Azure account password or Service Principal password
                 type: string
                 default: $AZURE_PASSWORD
-              alternate-tenant:
+              azure-tenant:
                 description: Tenant to sign in with
                 type: string
                 default: $AZURE_TENANT
+              alternate-tenant:
+                description: Tenant to sign in with
+                type: string
+                default: false
             steps:
               - run:
                   name: Login to the Azure CLI via username/password
                   command: |
                       az login \
+                      <<# parameters.alternate-tenant>> --tenant parameters.azure-tenant <</parameters.alternate-tenant>> \
                       -u <<parameters.azure-username>> \
-                      -p <<parameters.azure-password>>       
+                      -p <<parameters.azure-password>>
           login-with-service-principal:
             description: Initilize the Azure CLI
             parameters:
@@ -136,6 +141,12 @@ jobs:
       - my-orb/login-with-service-principal:
           azure-username: $AZURE_SP_NAME
           azure-password: $AZURE_SP_PASSWORD
+          azure-tenant: $AZURE_SP_TENANT
+      - run: az -v
+      - run: az resource list 
+      - run: az logout
+      - my-orb/login-with-user:
+          alternate-tenant: true
           azure-tenant: $AZURE_SP_TENANT
       - run: az -v
       - run: az resource list 
