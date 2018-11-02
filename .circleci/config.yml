@@ -72,6 +72,9 @@ workflows:
     build-deploy:
         jobs:
             - validate-orb
+            - test-orb-non-python:
+                requires:
+                    - validate-orb
             - test-orb:
                 requires:
                     - validate-orb
