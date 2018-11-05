@@ -33,8 +33,8 @@ commands:
           name: Install Azure CLI, if not available
           command: |
             if [[ $(command -v az) != "" ]]; then
-                echo "Azure CLI installed already."
-                exit 0
+              echo "Azure CLI installed already."
+              exit 0
             fi
             # Set sudo to work whether logged in as root user or non-root user
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
@@ -65,7 +65,8 @@ commands:
             $SUDO apt-get -qqy install \
              ca-certificates \
              azure-cli
-           echo "Azure CLI is now installed."
+            echo "Azure CLI is now installed."
+
   login-with-user:
     description: Initilize the Azure CLI
     parameters:
