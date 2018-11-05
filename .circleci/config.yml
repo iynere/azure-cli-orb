@@ -49,11 +49,10 @@ jobs:
             - checkout
             - circleci-cli/install
             - run:
-                name: Authenticate with CircleCI
-                command: circleci setup --token $CIRCLECI_CLI_TOKEN
-            - run:
                 name: Publish dev orb
-                command: circleci orb publish src/orb.yml johnstonjacob/azure-cli@dev:0.0.2
+                command: circleci orb publish \
+                    --token $CIRCLECI_CLI_TOKEN \ 
+                    src/orb.yml johnstonjacob/azure-cli@dev:0.0.2
     test-orb:
         docker: 
             - image: circleci/python:2.7-stretch
