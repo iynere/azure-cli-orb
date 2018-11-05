@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    azure-cli: johnstonjacob/azure-cli@0.1.0
+    azure-cli: johnstonjacob/azure-cli@dev:0.0.1
     circleci-cli: circleci/circleci-cli@0.0.1
 
 commands:
