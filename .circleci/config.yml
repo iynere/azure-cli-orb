@@ -3,6 +3,34 @@ orbs:
     azure-cli: johnstonjacob/azure-cli@0.1.0
     circleci-cli: circleci/circleci-cli@0.0.1
 
+commands:
+    azure-cli-tests:
+        description: "Verifies azure-cli install"
+        steps:
+            - azure-cli/install
+            - run: 
+                  name: Verify Azure install
+                  command: az -v
+            - azure-cli/login-with-user
+            - run: 
+                  name: Verify login with user
+                  command: az resource list 
+            - run: az logout
+            - azure-cli/login-with-service-principal:
+                azure-username: $AZURE_SP_NAME
+                azure-password: $AZURE_SP_PASSWORD
+                azure-tenant: $AZURE_SP_TENANT
+            - run: 
+                  name: Verify login with Service Principal
+                  command: az resource list 
+            - run: az logout
+            - azure-cli/login-with-user:
+                alternate-tenant: true
+                azure-tenant: $AZURE_SP_TENANT
+            - run: 
+                  name: Verify login with user and alternate tenant
+                  command: az resource list 
+
 jobs:
     validate-orb:
         docker:
@@ -18,81 +46,16 @@ jobs:
         docker: 
             - image: circleci/python:2.7-stretch
         steps:
-          - azure-cli/install
-          - run: 
-                name: Verify Azure install
-                command: az -v
-          - azure-cli/login-with-user
-          - run: 
-                name: Verify login with user
-                command: az resource list 
-          - run: az logout
-          - azure-cli/login-with-service-principal:
-              azure-username: $AZURE_SP_NAME
-              azure-password: $AZURE_SP_PASSWORD
-              azure-tenant: $AZURE_SP_TENANT
-          - run: 
-                name: Verify login with Service Principal
-                command: az resource list 
-          - run: az logout
-          - azure-cli/login-with-user:
-              alternate-tenant: true
-              azure-tenant: $AZURE_SP_TENANT
-          - run: 
-                name: Verify login with user and alternate tenant
-                command: az resource list 
+            - azure-cli-tests
     test-orb-non-python:
         docker: 
             - image: circleci/golang
         steps:
-          - azure-cli/install
-          - run: 
-                name: Verify Azure install
-                command: az -v
-          - azure-cli/login-with-user
-          - run: 
-                name: Verify login with user
-                command: az resource list 
-          - run: az logout
-          - azure-cli/login-with-service-principal:
-              azure-username: $AZURE_SP_NAME
-              azure-password: $AZURE_SP_PASSWORD
-              azure-tenant: $AZURE_SP_TENANT
-          - run: 
-                name: Verify login with Service Principal
-                command: az resource list 
-          - run: az logout
-          - azure-cli/login-with-user:
-              alternate-tenant: true
-              azure-tenant: $AZURE_SP_TENANT
-          - run: 
-                name: Verify login with user and alternate tenant
-                command: az resource list 
+            - azure-cli-tests
     test-orb-docker-executor:
         executor: azure-cli/azure-docker
         steps:
-          - run: 
-                name: Verify Azure install
-                command: az -v
-          - azure-cli/login-with-user
-          - run: 
-                name: Verify login with user
-                command: az resource list 
-          - run: az logout
-          - azure-cli/login-with-service-principal:
-              azure-username: $AZURE_SP_NAME
-              azure-password: $AZURE_SP_PASSWORD
-              azure-tenant: $AZURE_SP_TENANT
-          - run: 
-                name: Verify login with Service Principal
-                command: az resource list 
-          - run: az logout
-          - azure-cli/login-with-user:
-              alternate-tenant: true
-              azure-tenant: $AZURE_SP_TENANT
-          - run: 
-                name: Verify login with user and alternate tenant
-                command: az resource list 
+            - azure-cli-tests
 workflows:
     build-deploy:
         jobs:
