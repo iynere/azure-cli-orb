@@ -51,8 +51,8 @@ jobs:
             - run:
                 name: Publish dev orb
                 command: circleci orb publish \
-                    --token $CIRCLECI_CLI_TOKEN \ 
-                    src/orb.yml johnstonjacob/azure-cli@dev:0.0.2
+                    src/orb.yml johnstonjacob/azure-cli@dev:0.0.2 \
+                    --token $CIRCLECI_CLI_TOKEN
     test-orb:
         docker: 
             - image: circleci/python:2.7-stretch
