@@ -63,6 +63,7 @@ commands:
             curl -L https://packages.microsoft.com/keys/microsoft.asc | $SUDO apt-key add -
 
             # Update and install the Azure CLI
+            $SUDO apt-get update
             $SUDO apt-get -qqy install \
              ca-certificates \
              azure-cli
