@@ -32,6 +32,8 @@ commands:
       - run:
           name: Install Azure CLI, if not available
           command: |
+            # Verify the CLI isn't already installed
+            # Use which instead of command -v for wider coverage of envs
             if [[ $(which az) != "" ]]; then
               echo "Azure CLI installed already."
               exit 0
@@ -44,7 +46,7 @@ commands:
 
             if [[ $(command -v lsb_release) == "" ]]; then
               echo "Installing lsb_release"
-              $SUDO apt-get -y install lsb-release
+              $SUDO apt-get -qqy install lsb-release
             fi
 
             # Create an environment variable for the correct distribution
@@ -56,7 +58,7 @@ commands:
 
             if [[ $(command -v curl) == "" ]]; then
               echo "Installing curl"
-              $SUDO apt-get -y install curl
+              $SUDO apt-get -qqy install curl
             fi
 
             # Get the Microsoft signing key 
